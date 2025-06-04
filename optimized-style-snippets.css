@@ -1,0 +1,238 @@
+/* CSS PERFORMANCE OPTIMIZATIONS FOR KOMFY */
+
+/* 1. USE CSS CONTAINMENT FOR BETTER PERFORMANCE */
+.card-container {
+    contain: layout style paint;
+}
+
+.queue-horizontal {
+    contain: layout style paint size;
+    /* Prevent reflows from affecting other parts */
+}
+
+/* 2. OPTIMIZE ANIMATIONS WITH GPU ACCELERATION */
+.card {
+    /* Force GPU layer creation */
+    transform: translateZ(0);
+    will-change: transform;
+    
+    /* Use transform instead of position for animations */
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card.dragging {
+    /* Disable expensive properties during drag */
+    will-change: transform;
+    transition: none;
+}
+
+.card.dragging img {
+    /* Remove filters during animation for 60fps */
+    filter: none !important;
+}
+
+/* 3. OPTIMIZE IMAGE RENDERING */
+.card-image img {
+    /* Optimize rendering performance */
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    
+    /* Prevent layout shifts */
+    aspect-ratio: 3/4;
+    object-fit: cover;
+    
+    /* Remove expensive filters by default */
+    filter: none;
+    
+    /* Add filter only when not animating */
+    transition: filter 0.3s ease;
+}
+
+.card:not(.dragging) .card-image img {
+    filter: contrast(1.1) saturate(1.1);
+}
+
+/* 4. USE EFFICIENT SELECTORS */
+/* Avoid descendant selectors where possible */
+.queue-item {
+    /* Direct styling instead of .queue-horizontal .queue-item */
+}
+
+/* 5. REDUCE PAINT AREAS */
+.action-btn::before {
+    /* Use transform instead of position for shimmer effect */
+    transform: translateX(-100%);
+    transition: transform 0.5s;
+}
+
+.action-btn:hover::before {
+    transform: translateX(200%);
+}
+
+/* 6. OPTIMIZE LOADING STATES */
+@keyframes skeleton-loading {
+    0% {
+        transform: translateX(-100%);
+    }
+    100% {
+        transform: translateX(100%);
+    }
+}
+
+.skeleton-img {
+    /* Use transform instead of background-position */
+    position: relative;
+    overflow: hidden;
+}
+
+.skeleton-img::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255, 255, 255, 0.3) 50%,
+        transparent 100%
+    );
+    animation: skeleton-loading 1.5s infinite;
+}
+
+/* 7. USE CSS VARIABLES FOR DYNAMIC VALUES */
+:root {
+    --card-width: min(320px, 60vw);
+    --card-height: min(440px, 50vh);
+    --animation-duration: 200ms;
+    --animation-curve: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-stack {
+    width: var(--card-width);
+    height: var(--card-height);
+}
+
+/* 8. OPTIMIZE MOBILE PERFORMANCE */
+@media (max-width: 768px) {
+    /* Disable complex animations on mobile */
+    .action-btn::before {
+        display: none;
+    }
+    
+    /* Simplify shadows on mobile */
+    .card {
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    /* Use simpler transitions */
+    * {
+        transition-duration: 150ms !important;
+    }
+}
+
+/* 9. USE MODERN CSS FEATURES */
+.card {
+    /* Use aspect-ratio instead of padding hack */
+    aspect-ratio: 3/4;
+    
+    /* Use logical properties */
+    margin-inline: auto;
+    padding-block: 1rem;
+}
+
+/* 10. CRITICAL CSS - INLINE THESE IN HTML */
+/* Move most critical styles to <style> tag in <head> */
+.app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh;
+}
+
+.card-container {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loading-card {
+    display: none;
+}
+
+/* 11. REDUCE SPECIFICITY AND INHERITANCE */
+.card * {
+    /* Avoid universal selectors */
+}
+
+/* Use classes instead of element selectors */
+.card-image-element { /* Instead of .card img */ }
+
+/* 12. OPTIMIZE WEB FONTS */
+@font-face {
+    font-family: 'Monaco';
+    src: local('Monaco'), local('Menlo'), local('SF Mono');
+    font-display: swap; /* Show fallback immediately */
+}
+
+/* 13. USE EFFICIENT PSEUDO-ELEMENTS */
+.spinner {
+    /* Use single element spinner */
+    border: 3px solid transparent;
+    border-top-color: #ff6b35;
+    border-right-color: #ff6b35;
+}
+
+/* 14. BATCH SIMILAR PROPERTIES */
+.card,
+.loading-card,
+.welcome-card {
+    /* Common properties grouped */
+    background: #fff;
+    border: 2px solid #2a2a2a;
+    border-radius: 8px;
+}
+
+/* 15. OPTIMIZE HOVER STATES */
+@media (hover: hover) {
+    /* Only apply hover styles on devices that support it */
+    .action-btn:hover {
+        transform: translateY(-1px);
+    }
+}
+
+/* 16. USE CSS GRID FOR LAYOUT PERFORMANCE */
+.action-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    /* Grid is more performant than flexbox for this use case */
+}
+
+/* 17. MINIMIZE REPAINTS */
+.current-prompt {
+    /* Isolate text changes */
+    contain: layout style;
+    
+    /* Pre-allocate space */
+    min-height: 40px;
+}
+
+/* 18. OPTIMIZE SCROLL PERFORMANCE */
+.queue-horizontal {
+    /* Enable smooth scrolling with momentum */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    
+    /* Optimize scroll performance */
+    will-change: scroll-position;
+}
+
+/* 19. USE PASSIVE EVENT LISTENERS (in JS) */
+/* Add { passive: true } to scroll and touch listeners */
+
+/* 20. LAZY LOAD NON-CRITICAL CSS */
+/* Split into critical.css and non-critical.css */
+/* Load non-critical CSS asynchronously */
