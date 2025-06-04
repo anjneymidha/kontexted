@@ -34,6 +34,11 @@ app.use(express.json({ limit: '50mb' }));
 // Serve static files BEFORE API routes
 app.use(express.static(__dirname));
 
+// Explicit route for root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Proxy for OpenRouter API
 app.post('/api/openrouter', async (req, res) => {
     try {
