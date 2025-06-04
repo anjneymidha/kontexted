@@ -518,7 +518,7 @@ async function analyzeImageWithGemini(base64Image) {
                         content: [
                             {
                                 type: 'text',
-                                text: 'Create ONE creative transformation prompt for this image. IMPORTANT: Put your answer between $$$ symbols like this format: $$$Your prompt here$$$. Examples: $$$The person is now a pirate captain on a ship$$$ or $$$Transform into Van Gogh painting style$$$ or $$$The person is now an astronaut on Mars$$$. Be creative and specific. Only respond with the delimited prompt, nothing else.'
+                                text: 'Describe a creative transformation for this image in one sentence. Format your response exactly like this: $transformation description here$. For example: $The person becomes a medieval knight$ or $Transform into Van Gogh painting style$ or $The person is now in a cyberpunk city$.'
                             },
                             {
                                 type: 'image_url',
@@ -542,19 +542,24 @@ async function analyzeImageWithGemini(base64Image) {
     const data = await response.json();
     console.log('🔍 FULL API RESPONSE:', data);
     
+    if (data.error) {
+        console.error('❌ API Error:', data.error);
+        throw new Error(`Gemini API error: ${data.error.message || JSON.stringify(data.error)}`);
+    }
+    
     if (!data.choices || !data.choices[0] || !data.choices[0].message) {
         console.error('❌ Invalid API response structure:', data);
         throw new Error('Invalid response from Gemini API');
     }
     
-    const fullResponse = data.choices[0].message.content.trim();
+    const fullResponse = data.choices[0].message.content ? data.choices[0].message.content.trim() : '';
     
     // Debug: Log the full response from Gemini
     console.log('🤖 FULL GEMINI RESPONSE:', fullResponse);
     console.log('🤖 RESPONSE LENGTH:', fullResponse.length);
     
-    // Extract text between $$$ delimiters
-    const match = fullResponse.match(/\$\$\$(.*?)\$\$\$/);
+    // Extract text between $ delimiters
+    const match = fullResponse.match(/\$(.*?)\$/);
     
     if (match && match[1]) {
         const extractedPrompt = match[1].trim();
@@ -562,6 +567,7 @@ async function analyzeImageWithGemini(base64Image) {
         return extractedPrompt;
     } else {
         console.log('❌ No delimiters found in Gemini response');
+        console.log('Full response was:', fullResponse);
         throw new Error('Failed to extract prompt from Gemini response - no delimiters found');
     }
 }
@@ -692,7 +698,7 @@ function updateQueueUI() {
     queueList.innerHTML = '';
     
     // Show actual generated cards
-    cardQueue.forEach((cardData, index) => {
+    cardQueue.forEach((cardData) => {
         const queueItem = document.createElement('div');
         queueItem.className = 'queue-item';
         

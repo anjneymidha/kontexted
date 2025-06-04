@@ -1,14 +1,20 @@
+require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const fetch = require('node-fetch');
 const path = require('path');
 
 // API Keys from environment variables
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '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';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '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';
 const BFL_API_KEY = process.env.BFL_API_KEY || '6249d98f-d557-4499-98b9-4355cc3f4a42';
 
 const app = express();
 const PORT = 3000;
+
+// Debug: Log API keys on startup
+console.log('🚀 Server starting...');
+console.log('🔑 OPENROUTER_API_KEY:', OPENROUTER_API_KEY ? OPENROUTER_API_KEY.substring(0, 20) + '...' : 'MISSING');
+console.log('🔑 BFL_API_KEY:', BFL_API_KEY ? BFL_API_KEY.substring(0, 20) + '...' : 'MISSING');
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
@@ -19,6 +25,7 @@ app.use(express.static(__dirname));
 // Proxy for OpenRouter API
 app.post('/api/openrouter', async (req, res) => {
     try {
+        console.log('🔍 OpenRouter request data:', JSON.stringify(req.body.data, null, 2));
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
             headers: {
