@@ -39,6 +39,17 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
 });
 
+// Ensure static files are served with correct MIME types
+app.get('/style.css', (req, res) => {
+    res.type('text/css');
+    res.sendFile(path.join(__dirname, 'style.css'));
+});
+
+app.get('/script.js', (req, res) => {
+    res.type('application/javascript');
+    res.sendFile(path.join(__dirname, 'script.js'));
+});
+
 // Proxy for OpenRouter API
 app.post('/api/openrouter', async (req, res) => {
     try {
