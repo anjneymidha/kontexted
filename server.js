@@ -29,7 +29,8 @@ console.log('🔑 OPENROUTER_API_KEY:', OPENROUTER_API_KEY.substring(0, 20) + '.
 console.log('🔑 BFL_API_KEY:', BFL_API_KEY.substring(0, 20) + '...');
 
 app.use(cors());
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 // Serve static files BEFORE API routes
 app.use(express.static(__dirname));

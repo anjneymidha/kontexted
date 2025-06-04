@@ -61,8 +61,21 @@ async function handleImageUpload(event) {
     
     try {
         hideWelcomeMessage();
-        showLoading('Uploading your photo...');
-        originalImageBlob = file;
+        showLoading('Processing your photo...');
+        
+        // Only compress if file is too large for server
+        const maxServerSize = 75 * 1024 * 1024; // 75MB (conservative estimate for base64 encoding)
+        let processedBlob = file;
+        
+        if (file.size > maxServerSize) {
+            showLoading('Optimizing large image...');
+            processedBlob = await compressImage(file);
+            console.log(`📦 Compressed: ${(file.size / 1024 / 1024).toFixed(1)}MB → ${(processedBlob.size / 1024 / 1024).toFixed(1)}MB`);
+        } else {
+            console.log(`📄 Using original: ${(file.size / 1024 / 1024).toFixed(1)}MB (no compression needed)`);
+        }
+        
+        originalImageBlob = processedBlob;
         
         // Clear existing queue and prompts
         cardQueue = [];
@@ -75,7 +88,7 @@ async function handleImageUpload(event) {
         const firstCard = await generateCardData();
         
         showLoading('Creating your perfect match...');
-        createComparisonCard(URL.createObjectURL(file), firstCard.editedUrl, firstCard.prompt);
+        createComparisonCard(URL.createObjectURL(processedBlob), firstCard.editedUrl, firstCard.prompt);
         hideLoading();
         
         // Start preloading next cards in background (don't wait for this)
@@ -88,7 +101,7 @@ async function handleImageUpload(event) {
     }
 }
 
-function createComparisonCard(originalUrl, editedUrl, prompt) {
+function createComparisonCard(_, editedUrl, prompt) {
     const card = document.createElement('div');
     card.className = 'card';
     
@@ -758,5 +771,46 @@ function updateLovedUI() {
         img.title = lovedItem.prompt; // Show prompt on hover
         
         lovedList.appendChild(img);
+    });
+}
+
+function compressImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+        // Check file size first
+        const maxSize = 200 * 1024 * 1024; // 200MB absolute limit
+        if (file.size > maxSize) {
+            reject(new Error(`Image too large (${(file.size / 1024 / 1024).toFixed(1)}MB). Please use an image smaller than 200MB.`));
+            return;
+        }
+        
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
+        
+        img.onload = () => {
+            // Calculate new dimensions
+            let { width, height } = img;
+            
+            if (width > maxWidth) {
+                height = (height * maxWidth) / width;
+                width = maxWidth;
+            }
+            if (height > maxHeight) {
+                width = (width * maxHeight) / height;
+                height = maxHeight;
+            }
+            
+            // Set canvas size
+            canvas.width = width;
+            canvas.height = height;
+            
+            // Draw and compress
+            ctx.drawImage(img, 0, 0, width, height);
+            
+            canvas.toBlob(resolve, 'image/jpeg', quality);
+        };
+        
+        img.onerror = () => reject(new Error('Failed to load image'));
+        img.src = URL.createObjectURL(file);
     });
 }
