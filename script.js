@@ -126,14 +126,12 @@ function createComparisonCard(originalUrl, editedUrl, prompt) {
 }
 
 function addSwipeListeners(card) {
-    let startX, startY, currentX, currentY, startTime, lastTime;
+    let startX, startY, currentX, currentY, startTime;
     
-    // Mouse events
     card.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', endDrag);
     
-    // Touch events - optimized for mobile performance
     card.addEventListener('touchstart', startDrag, { passive: false });
     document.addEventListener('touchmove', drag, { passive: false });
     document.addEventListener('touchend', endDrag, { passive: true });
@@ -150,51 +148,41 @@ function addSwipeListeners(card) {
         currentX = clientX;
         currentY = clientY;
         startTime = Date.now();
-        lastTime = startTime;
         
         card.classList.add('dragging');
+        card.style.transition = 'none';
         e.preventDefault();
     }
     
-    // Throttle drag updates for better mobile performance
-    let dragFrame = null;
     function drag(e) {
         if (!isDragging) return;
-        
-        if (dragFrame) return; // Skip if already scheduled
-        
-        dragFrame = requestAnimationFrame(() => {
-            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-            
-            currentX = clientX;
-            currentY = clientY;
-            lastTime = Date.now();
-            
-            const deltaX = currentX - startX;
-            const deltaY = currentY - startY;
-            const rotation = deltaX * 0.1;
-            
-            // Use transform3d for better mobile performance
-            card.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) rotate(${rotation}deg)`;
-            
-            // Show swipe indicators (less frequent updates)
-            if (Math.abs(deltaX) > 30) {
-                if (deltaX > 50) {
-                    card.classList.add('indicating-like');
-                    card.classList.remove('indicating-nope');
-                } else if (deltaX < -50) {
-                    card.classList.add('indicating-nope');
-                    card.classList.remove('indicating-like');
-                }
-            } else {
-                card.classList.remove('indicating-like', 'indicating-nope');
-            }
-            
-            dragFrame = null;
-        });
-        
         e.preventDefault();
+        
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        currentX = clientX;
+        currentY = clientY;
+        
+        const deltaX = currentX - startX;
+        const deltaY = currentY - startY;
+        const rotation = deltaX * 0.1;
+        
+        // Direct transform for immediate response
+        card.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) rotate(${rotation}deg)`;
+        
+        // Show indicators
+        if (Math.abs(deltaX) > 50) {
+            if (deltaX > 0) {
+                card.classList.add('indicating-like');
+                card.classList.remove('indicating-nope');
+            } else {
+                card.classList.add('indicating-nope');
+                card.classList.remove('indicating-like');
+            }
+        } else {
+            card.classList.remove('indicating-like', 'indicating-nope');
+        }
     }
     
     function endDrag() {
@@ -202,41 +190,40 @@ function addSwipeListeners(card) {
         isDragging = false;
         
         const deltaX = currentX - startX;
-        const deltaTime = lastTime - startTime;
-        const velocity = Math.abs(deltaX) / Math.max(deltaTime, 1); // pixels per ms
+        const deltaTime = Date.now() - startTime;
+        const velocity = Math.abs(deltaX) / Math.max(deltaTime, 1);
         
         card.classList.remove('dragging', 'indicating-like', 'indicating-nope');
         
-        // Mobile-optimized threshold for one-handed use
-        const isMobile = window.innerWidth <= 768;
-        const swipeThreshold = isMobile ? 40 : 60;
-        const velocityThreshold = isMobile ? 0.3 : 0.5;
-        const shouldSwipe = Math.abs(deltaX) > swipeThreshold || velocity > velocityThreshold;
+        // Simple, reliable swipe detection
+        const shouldSwipe = Math.abs(deltaX) > 70 || velocity > 0.3;
         
-        if (shouldSwipe && Math.abs(deltaX) > 30) {
-            // Swipe threshold reached
+        if (shouldSwipe) {
             const direction = deltaX > 0 ? 'right' : 'left';
+            // Immediate swipe - no delays
+            card.classList.add(`swiped-${direction}`);
             completeSwipe(card, direction);
         } else {
-            // Snap back with smooth transition
-            card.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            // Quick snap back
+            card.style.transition = 'transform 0.2s ease-out';
             card.style.transform = 'translate3d(0, 0, 0) rotate(0deg)';
-            
-            // Remove transition after animation completes
             setTimeout(() => {
                 card.style.transition = '';
-            }, 300);
+            }, 200);
         }
     }
 }
 
 function swipeCard(direction) {
     if (currentCard) {
+        currentCard.classList.add(`swiped-${direction}`);
         completeSwipe(currentCard, direction);
     }
 }
 
 function completeSwipe(card, direction) {
+    // Immediately hide the card to clear the view
+    card.style.pointerEvents = 'none';
     card.classList.add(`swiped-${direction}`);
     
     // Clear the caption immediately
@@ -268,14 +255,17 @@ function completeSwipe(card, direction) {
         savePreferences();
     }
     
+    // Reset current card state immediately
+    currentCard = null;
+    currentCardData = null;
+    
+    // Show next card immediately - no delay!
+    showNextCard();
+    
+    // Remove the old card from DOM after animation (but don't wait for it)
     setTimeout(() => {
         card.remove();
-        currentCard = null;
-        currentCardData = null;
-        
-        // Show next card immediately from queue
-        showNextCard();
-    }, 300);
+    }, 50);
 }
 
 async function generateCardData() {
