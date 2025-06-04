@@ -10,11 +10,13 @@ const BFL_API_KEY = process.env.BFL_API_KEY;
 
 // Validate required environment variables
 if (!OPENROUTER_API_KEY) {
-    console.error('❌ OPENROUTER_API_KEY is required in .env file');
+    console.error('❌ OPENROUTER_API_KEY is required');
+    console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('API')));
     process.exit(1);
 }
 if (!BFL_API_KEY) {
-    console.error('❌ BFL_API_KEY is required in .env file');
+    console.error('❌ BFL_API_KEY is required');
+    console.error('Available env vars:', Object.keys(process.env).filter(k => k.includes('API')));
     process.exit(1);
 }
 
