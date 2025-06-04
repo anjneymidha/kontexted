@@ -518,7 +518,7 @@ async function analyzeImageWithGemini(base64Image) {
                         content: [
                             {
                                 type: 'text',
-                                text: 'Describe a creative transformation for this image in one sentence. Format your response exactly like this: $transformation description here$. For example: $The person becomes a medieval knight$ or $Transform into Van Gogh painting style$ or $The person is now in a cyberpunk city$.'
+                                text: 'Generate a unique, creative transformation for this image. Avoid superhero themes. Be original and diverse. Format your response exactly like this: $transformation description here$. Examples: $The person is now a Victorian-era inventor$ or $Transform into a watercolor painting$ or $The person is now in ancient Egypt$ or $Become a character from a Studio Ghibli film$ or $The person is now a medieval alchemist$.'
                             },
                             {
                                 type: 'image_url',

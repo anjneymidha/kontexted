@@ -5,16 +5,26 @@ const fetch = require('node-fetch');
 const path = require('path');
 
 // API Keys from environment variables
-const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY || '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';
-const BFL_API_KEY = process.env.BFL_API_KEY || '6249d98f-d557-4499-98b9-4355cc3f4a42';
+const OPENROUTER_API_KEY = process.env.OPENROUTER_API_KEY;
+const BFL_API_KEY = process.env.BFL_API_KEY;
+
+// Validate required environment variables
+if (!OPENROUTER_API_KEY) {
+    console.error('❌ OPENROUTER_API_KEY is required in .env file');
+    process.exit(1);
+}
+if (!BFL_API_KEY) {
+    console.error('❌ BFL_API_KEY is required in .env file');
+    process.exit(1);
+}
 
 const app = express();
 const PORT = 3000;
 
 // Debug: Log API keys on startup
 console.log('🚀 Server starting...');
-console.log('🔑 OPENROUTER_API_KEY:', OPENROUTER_API_KEY ? OPENROUTER_API_KEY.substring(0, 20) + '...' : 'MISSING');
-console.log('🔑 BFL_API_KEY:', BFL_API_KEY ? BFL_API_KEY.substring(0, 20) + '...' : 'MISSING');
+console.log('🔑 OPENROUTER_API_KEY:', OPENROUTER_API_KEY.substring(0, 20) + '...');
+console.log('🔑 BFL_API_KEY:', BFL_API_KEY.substring(0, 20) + '...');
 
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
