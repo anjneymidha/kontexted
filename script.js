@@ -126,17 +126,17 @@ function createComparisonCard(originalUrl, editedUrl, prompt) {
 }
 
 function addSwipeListeners(card) {
-    let startX, startY, currentX, currentY;
+    let startX, startY, currentX, currentY, startTime, lastTime;
     
     // Mouse events
     card.addEventListener('mousedown', startDrag);
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', endDrag);
     
-    // Touch events
-    card.addEventListener('touchstart', startDrag);
-    document.addEventListener('touchmove', drag);
-    document.addEventListener('touchend', endDrag);
+    // Touch events - optimized for mobile performance
+    card.addEventListener('touchstart', startDrag, { passive: false });
+    document.addEventListener('touchmove', drag, { passive: false });
+    document.addEventListener('touchend', endDrag, { passive: true });
     
     function startDrag(e) {
         if (isDragging) return;
@@ -149,55 +149,83 @@ function addSwipeListeners(card) {
         startY = clientY;
         currentX = clientX;
         currentY = clientY;
+        startTime = Date.now();
+        lastTime = startTime;
         
         card.classList.add('dragging');
         e.preventDefault();
     }
     
+    // Throttle drag updates for better mobile performance
+    let dragFrame = null;
     function drag(e) {
         if (!isDragging) return;
         
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        if (dragFrame) return; // Skip if already scheduled
         
-        currentX = clientX;
-        currentY = clientY;
-        
-        const deltaX = currentX - startX;
-        const deltaY = currentY - startY;
-        const rotation = deltaX * 0.1;
-        
-        card.style.transform = `translate(${deltaX}px, ${deltaY}px) rotate(${rotation}deg)`;
-        
-        // Show swipe indicators
-        const opacity = Math.min(Math.abs(deltaX) / 100, 1);
-        if (deltaX > 50) {
-            card.classList.add('indicating-like');
-            card.classList.remove('indicating-nope');
-        } else if (deltaX < -50) {
-            card.classList.add('indicating-nope');
-            card.classList.remove('indicating-like');
-        } else {
-            card.classList.remove('indicating-like', 'indicating-nope');
-        }
+        dragFrame = requestAnimationFrame(() => {
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            
+            currentX = clientX;
+            currentY = clientY;
+            lastTime = Date.now();
+            
+            const deltaX = currentX - startX;
+            const deltaY = currentY - startY;
+            const rotation = deltaX * 0.1;
+            
+            // Use transform3d for better mobile performance
+            card.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) rotate(${rotation}deg)`;
+            
+            // Show swipe indicators (less frequent updates)
+            if (Math.abs(deltaX) > 30) {
+                if (deltaX > 50) {
+                    card.classList.add('indicating-like');
+                    card.classList.remove('indicating-nope');
+                } else if (deltaX < -50) {
+                    card.classList.add('indicating-nope');
+                    card.classList.remove('indicating-like');
+                }
+            } else {
+                card.classList.remove('indicating-like', 'indicating-nope');
+            }
+            
+            dragFrame = null;
+        });
         
         e.preventDefault();
     }
     
-    function endDrag(e) {
+    function endDrag() {
         if (!isDragging) return;
         isDragging = false;
         
         const deltaX = currentX - startX;
+        const deltaTime = lastTime - startTime;
+        const velocity = Math.abs(deltaX) / Math.max(deltaTime, 1); // pixels per ms
+        
         card.classList.remove('dragging', 'indicating-like', 'indicating-nope');
         
-        if (Math.abs(deltaX) > 100) {
+        // Mobile-optimized threshold for one-handed use
+        const isMobile = window.innerWidth <= 768;
+        const swipeThreshold = isMobile ? 40 : 60;
+        const velocityThreshold = isMobile ? 0.3 : 0.5;
+        const shouldSwipe = Math.abs(deltaX) > swipeThreshold || velocity > velocityThreshold;
+        
+        if (shouldSwipe && Math.abs(deltaX) > 30) {
             // Swipe threshold reached
             const direction = deltaX > 0 ? 'right' : 'left';
             completeSwipe(card, direction);
         } else {
-            // Snap back
-            card.style.transform = '';
+            // Snap back with smooth transition
+            card.style.transition = 'transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+            card.style.transform = 'translate3d(0, 0, 0) rotate(0deg)';
+            
+            // Remove transition after animation completes
+            setTimeout(() => {
+                card.style.transition = '';
+            }, 300);
         }
     }
 }
@@ -281,8 +309,10 @@ async function preloadNextCards() {
     
     try {
         // Generate multiple cards in parallel for faster replenishment
-        const targetQueueSize = 15;
-        const parallelGenerations = Math.min(3, targetQueueSize - cardQueue.length);
+        // Reduce queue size on mobile for better performance
+        const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+        const targetQueueSize = isMobile ? 8 : 15;
+        const parallelGenerations = Math.min(isMobile ? 2 : 3, targetQueueSize - cardQueue.length);
         
         const promises = [];
         for (let i = 0; i < parallelGenerations; i++) {

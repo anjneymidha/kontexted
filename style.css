@@ -13,6 +13,12 @@ body {
     letter-spacing: 0.5px;
     margin: 0;
     padding: 0;
+    /* Mobile optimizations */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
 }
 
 /* Allow text selection in sidebars */
@@ -31,6 +37,7 @@ body {
     height: 100dvh; /* Dynamic viewport height for mobile */
     background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
     overflow: hidden;
+    padding-bottom: env(safe-area-inset-bottom);
 }
 
 .top-bar {
@@ -157,29 +164,32 @@ body {
     margin: 0 auto;
     padding: 0 16px;
     background: linear-gradient(180deg, #ffffff 0%, #f8f8f8 100%);
+    padding-bottom: 120px; /* Space for fixed bottom buttons */
 }
 
 .current-prompt {
     background: #fff;
     border: 1px solid #e0e0e0;
-    border-radius: 4px;
-    padding: 12px;
-    font-size: 18px;
+    border-radius: 8px;
+    padding: 16px;
+    font-size: 16px;
     line-height: 1.4;
     color: #2a2a2a;
     word-wrap: break-word;
     white-space: normal;
     user-select: text;
     cursor: text;
-    width: min(320px, 80vw);
+    width: min(340px, 85vw);
     flex-shrink: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     text-align: center;
-    min-height: 40px;
-    max-height: 15vh;
+    min-height: 50px;
+    max-height: 12vh;
     overflow-y: auto;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    order: 1;
 }
 
 .header {
@@ -219,10 +229,13 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 16px 0;
+    justify-content: center;
+    padding: 8px 0;
     min-height: 0;
     overflow: hidden;
     gap: 12px;
+    /* Position cards in the sweet spot for thumb reach */
+    padding-top: 60px;
 }
 
 .card-stack {
@@ -231,8 +244,10 @@ body {
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    width: min(320px, 60vw);
-    height: min(440px, 50vh);
+    width: min(340px, 85vw);
+    height: min(480px, 55vh);
+    /* Optimize for thumb reach zone */
+    margin-bottom: 20px;
 }
 
 .card {
@@ -243,9 +258,13 @@ body {
     border: 2px solid #2a2a2a;
     border-radius: 8px;
     cursor: grab;
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.2s ease;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.2s ease;
     overflow: hidden;
     box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    /* Mobile performance optimizations */
+    will-change: transform;
+    transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
 }
 
 .card.dragging {
@@ -255,13 +274,15 @@ body {
 }
 
 .card.swiped-left {
-    transform: translateX(-120vw) rotate(-15deg);
+    transform: translate3d(-120vw, 0, 0) rotate(-15deg);
     opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
 }
 
 .card.swiped-right {
-    transform: translateX(120vw) rotate(15deg);
+    transform: translate3d(120vw, 0, 0) rotate(15deg);
     opacity: 0;
+    transition: transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 0.3s ease;
 }
 
 .card-content {
@@ -415,28 +436,36 @@ body {
 }
 
 .action-buttons {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 8px;
-    padding: 12px 0 16px;
+    gap: 12px;
+    padding: 16px;
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+    background: rgba(248, 248, 248, 0.95);
+    backdrop-filter: blur(10px);
     border-top: 1px solid #e8e8e8;
-    flex-shrink: 0;
+    z-index: 100;
 }
 
 .action-btn {
-    height: 48px;
+    height: 60px;
     border: 2px solid #2a2a2a;
-    border-radius: 4px;
+    border-radius: 12px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 16px;
+    font-size: 20px;
     transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
     font-family: inherit;
     font-weight: 700;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
 .action-btn:active {
@@ -548,42 +577,71 @@ body {
     }
     
     .queue-horizontal .queue-item {
-        width: 80px;
+        width: 70px;
     }
     
     .queue-horizontal .queue-item img {
-        width: 80px;
-        height: 60px;
+        width: 70px;
+        height: 50px;
     }
     
     .main-content {
         padding: 0 12px;
+        padding-bottom: 140px; /* More space for larger buttons */
     }
     
     .card-container {
-        flex-direction: column;
-        gap: 16px;
+        flex-direction: column-reverse; /* Put prompt at bottom for easier reading */
+        gap: 12px;
+        padding-top: 40px;
+        justify-content: flex-start;
     }
     
     .current-prompt {
         width: 100%;
-        min-height: 80px;
+        min-height: 60px;
         font-size: 16px;
-        padding: 12px;
+        padding: 16px;
+        margin-bottom: 12px;
+    }
+    
+    .card-stack {
+        width: 95vw;
+        height: 60vh;
+        max-height: 500px;
     }
     
     .card {
         max-width: 100%;
-        height: 400px;
+        height: 100%;
+        border-radius: 12px;
     }
     
     .loading-card {
         max-width: 100%;
-        height: 400px;
+        height: 100%;
+        border-radius: 12px;
+    }
+    
+    .welcome-card {
+        border-radius: 12px;
+    }
+    
+    .action-buttons {
+        gap: 16px;
+        padding: 20px;
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
     }
     
     .action-btn {
-        height: 44px;
-        font-size: 14px;
+        height: 64px;
+        font-size: 22px;
+        border-radius: 16px;
+        box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+    }
+    
+    /* Make touch targets larger */
+    .action-btn:active {
+        transform: translateY(2px) scale(0.98);
     }
 }
