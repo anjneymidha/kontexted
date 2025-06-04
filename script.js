@@ -540,6 +540,13 @@ async function analyzeImageWithGemini(base64Image) {
     }
 
     const data = await response.json();
+    console.log('🔍 FULL API RESPONSE:', data);
+    
+    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+        console.error('❌ Invalid API response structure:', data);
+        throw new Error('Invalid response from Gemini API');
+    }
+    
     const fullResponse = data.choices[0].message.content.trim();
     
     // Debug: Log the full response from Gemini
