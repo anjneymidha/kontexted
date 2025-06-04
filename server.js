@@ -21,7 +21,7 @@ if (!BFL_API_KEY) {
 }
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // Debug: Log API keys on startup
 console.log('🚀 Server starting...');
@@ -100,3 +100,6 @@ app.post('/api/bfl-poll', async (req, res) => {
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });
+
+// Export for Vercel serverless functions
+module.exports = app;
