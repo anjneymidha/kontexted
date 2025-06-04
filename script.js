@@ -383,11 +383,24 @@ async function saveCurrentImage() {
         saveBtn.style.transform = 'scale(1.2)';
         saveBtn.innerHTML = '<span>⏬</span>';
         
-        // For mobile devices, try to save to camera roll
+        // Use server proxy to download image (bypasses CORS)
+        const response = await fetch('/api/download-image', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ imageUrl: currentImageUrl })
+        });
+        
+        if (!response.ok) {
+            throw new Error(`Download failed: ${response.status}`);
+        }
+        
+        const blob = await response.blob();
+        
+        // For mobile devices, try to share
         if (navigator.share && navigator.canShare) {
             try {
-                const response = await fetch(currentImageUrl);
-                const blob = await response.blob();
                 const file = new File([blob], `kontext-edit-${Date.now()}.jpg`, { type: 'image/jpeg' });
                 
                 if (navigator.canShare({ files: [file] })) {
@@ -402,14 +415,10 @@ async function saveCurrentImage() {
                 }
             } catch (shareError) {
                 console.log('Share failed, falling back to download:', shareError);
-                const response = await fetch(currentImageUrl);
-                const blob = await response.blob();
                 downloadImage(blob);
             }
         } else {
             // Desktop or unsupported browsers - download
-            const response = await fetch(currentImageUrl);
-            const blob = await response.blob();
             downloadImage(blob);
         }
         

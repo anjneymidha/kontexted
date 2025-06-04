@@ -50,7 +50,27 @@ app.get('/script.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'script.js'));
 });
 
-// Removed hardcoded anj.jpg route - app now requires user uploads
+// Proxy for downloading images (to bypass CORS)
+app.post('/api/download-image', async (req, res) => {
+    try {
+        const { imageUrl } = req.body;
+        const response = await fetch(imageUrl);
+        
+        if (!response.ok) {
+            throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+        
+        const buffer = await response.buffer();
+        res.set({
+            'Content-Type': 'image/jpeg',
+            'Content-Disposition': `attachment; filename="kontext-edit-${Date.now()}.jpg"`
+        });
+        res.send(buffer);
+    } catch (error) {
+        console.error('Image download error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
 
 // Proxy for OpenRouter API
 app.post('/api/openrouter', async (req, res) => {
