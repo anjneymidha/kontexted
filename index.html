@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Kontext Engine</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app">
+        <div class="top-bar">
+            <div class="queue-section">
+                <h3>Queue</h3>
+                <div class="queue-horizontal" id="queueList">
+                    <!-- Queue images will be added here dynamically -->
+                </div>
+            </div>
+            
+            <div class="loved-section" id="lovedSection" style="display: none;">
+                <h3>Loved ❤️</h3>
+                <div class="loved-horizontal" id="lovedList">
+                    <!-- Loved images will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <div class="main-content">
+
+            <div class="card-container">
+                <div class="card-stack" id="cardStack">
+                    <div class="loading-card" id="loadingCard" style="display: none;">
+                        <div class="spinner"></div>
+                        <p id="loadingText">Creating magic...</p>
+                    </div>
+                </div>
+                
+                <div class="current-prompt" id="currentPrompt">
+                    <!-- Current prompt will be displayed here -->
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn reject-btn" id="rejectBtn">
+                    <span>❌</span>
+                </button>
+                <button class="action-btn save-btn" id="saveBtn">
+                    <span>💾</span>
+                </button>
+                <button class="action-btn upload-btn-action" id="uploadBtn">
+                    <span>📷</span>
+                </button>
+                <button class="action-btn like-btn" id="likeBtn">
+                    <span>❤️</span>
+                </button>
+            </div>
+        </div>
+
+        <input type="file" id="imageInput" accept="image/*" style="display: none;" />
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
