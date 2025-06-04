@@ -60,6 +60,7 @@ async function handleImageUpload(event) {
     if (!file) return;
     
     try {
+        hideWelcomeMessage();
         showLoading('Uploading your photo...');
         originalImageBlob = file;
         
@@ -457,8 +458,13 @@ function hideLoading() {
 }
 
 function showWelcomeMessage() {
-    loadingText.textContent = 'Upload a photo to start creating! 📷';
-    loadingCard.style.display = 'flex';
+    const welcomeCard = document.getElementById('welcomeCard');
+    welcomeCard.style.display = 'flex';
+}
+
+function hideWelcomeMessage() {
+    const welcomeCard = document.getElementById('welcomeCard');
+    welcomeCard.style.display = 'none';
 }
 
 function fileToBase64(file) {

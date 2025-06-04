@@ -366,6 +366,54 @@ body {
     letter-spacing: 1px;
 }
 
+.welcome-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    border: 2px solid #2a2a2a;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+}
+
+.welcome-content {
+    text-align: center;
+    padding: 24px;
+}
+
+.welcome-content h2 {
+    color: #2a2a2a;
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 12px 0;
+}
+
+.welcome-content p {
+    color: #666;
+    font-size: 12px;
+    margin: 0 0 20px 0;
+    line-height: 1.4;
+}
+
+.upload-btn-welcome {
+    background: #ff6b35;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+.upload-btn-welcome:hover {
+    background: #e55a2e;
+}
+
 .action-buttons {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
