@@ -44,45 +44,16 @@ rejectBtn.addEventListener('click', () => swipeCard('left'));
 likeBtn.addEventListener('click', () => swipeCard('right'));
 saveBtn.addEventListener('click', saveCurrentImage);
 
-// Auto-process anj.jpg on page load
+// Wait for user upload instead of auto-processing
 window.addEventListener('load', () => {
     loadPreferences();
-    autoProcessImage();
+    showWelcomeMessage();
 });
 
 // Keyboard controls
 document.addEventListener('keydown', handleKeyPress);
 
-async function autoProcessImage() {
-    try {
-        showLoading('Loading your photo...');
-        
-        const response = await fetch('/anj.jpg');
-        originalImageBlob = await response.blob();
-        
-        // Clear existing data
-        cardQueue = [];
-        allPrompts = [];
-        lovedItems = [];
-        updateQueueUI();
-        updateLovedUI();
-        
-        showLoading('AI analyzing your style...');
-        // Generate first card
-        const firstCard = await generateCardData();
-        
-        showLoading('Creating your perfect match...');
-        createComparisonCard(URL.createObjectURL(originalImageBlob), firstCard.editedUrl, firstCard.prompt);
-        hideLoading();
-        
-        // Start preloading next cards in background (don't wait for this)
-        setTimeout(() => preloadNextCards(), 100);
-        
-    } catch (error) {
-        console.error('Error auto-processing image:', error);
-        hideLoading();
-    }
-}
+// Removed autoProcessImage - app now waits for user uploads
 
 async function handleImageUpload(event) {
     const file = event.target.files[0];
@@ -483,6 +454,11 @@ function showLoading(text) {
 
 function hideLoading() {
     loadingCard.style.display = 'none';
+}
+
+function showWelcomeMessage() {
+    loadingText.textContent = 'Upload a photo to start creating! 📷';
+    loadingCard.style.display = 'flex';
 }
 
 function fileToBase64(file) {

@@ -50,10 +50,7 @@ app.get('/script.js', (req, res) => {
     res.sendFile(path.join(__dirname, 'script.js'));
 });
 
-app.get('/anj.jpg', (req, res) => {
-    res.type('image/jpeg');
-    res.sendFile(path.join(__dirname, 'anj.jpg'));
-});
+// Removed hardcoded anj.jpg route - app now requires user uploads
 
 // Proxy for OpenRouter API
 app.post('/api/openrouter', async (req, res) => {
