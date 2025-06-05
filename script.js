@@ -72,8 +72,8 @@ async function handleImageUpload(event) {
         hideWelcomeMessage();
         showLoading('Processing your photo...');
         
-        // Only compress if file is too large for server - very aggressive for mobile
-        const maxServerSize = 10 * 1024 * 1024; // 10MB (very conservative for mobile)
+        // Only compress if file is too large for server - ultra aggressive for mobile
+        const maxServerSize = 5 * 1024 * 1024; // 5MB (ultra conservative for mobile)
         let processedBlob = file;
         
         if (file.size > maxServerSize) {
@@ -83,18 +83,23 @@ async function handleImageUpload(event) {
             // If still too large, compress more aggressively
             if (processedBlob.size > maxServerSize) {
                 showLoading('Further optimizing...');
-                processedBlob = await compressImage(file, 800, 800, 0.5);
+                processedBlob = await compressImage(file, 640, 640, 0.4);
                 
                 // Final attempt if still too large
                 if (processedBlob.size > maxServerSize) {
                     showLoading('Final optimization...');
-                    processedBlob = await compressImage(file, 640, 640, 0.3);
+                    processedBlob = await compressImage(file, 512, 512, 0.3);
                 }
             }
             
             console.log(`📦 Compressed: ${(file.size / 1024 / 1024).toFixed(1)}MB → ${(processedBlob.size / 1024 / 1024).toFixed(1)}MB`);
         } else {
             console.log(`📄 Using original: ${(file.size / 1024 / 1024).toFixed(1)}MB (no compression needed)`);
+        }
+        
+        // Final safety check - if still too large, reject
+        if (processedBlob.size > maxServerSize) {
+            throw new Error(`Image still too large after compression (${(processedBlob.size / 1024 / 1024).toFixed(1)}MB). Please try a smaller image.`);
         }
         
         originalImageBlob = processedBlob;
@@ -727,7 +732,7 @@ function updateLovedUI() {
     });
 }
 
-function compressImage(file, maxWidth = 1280, maxHeight = 1280, quality = 0.7) {
+function compressImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.6) {
     return new Promise((resolve, reject) => {
         // Check file size first
         const maxSize = 200 * 1024 * 1024; // 200MB absolute limit
