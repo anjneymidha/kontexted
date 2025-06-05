@@ -72,8 +72,8 @@ async function handleImageUpload(event) {
         hideWelcomeMessage();
         showLoading('Processing your photo...');
         
-        // Only compress if file is too large for server
-        const maxServerSize = 75 * 1024 * 1024; // 75MB (conservative estimate for base64 encoding)
+        // Only compress if file is too large for server - more aggressive for mobile
+        const maxServerSize = 25 * 1024 * 1024; // 25MB (more conservative for mobile)
         let processedBlob = file;
         
         if (file.size > maxServerSize) {

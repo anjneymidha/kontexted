@@ -17,7 +17,7 @@
             </div>
             
             <div class="loved-section" id="lovedSection" style="display: none;">
-                <h3>Loved ❤️</h3>
+                <h3>loved</h3>
                 <div class="loved-horizontal" id="lovedList">
                     <!-- Loved images will be added here dynamically -->
                 </div>
@@ -25,14 +25,6 @@
         </div>
 
         <div class="main-content">
-            <div class="mode-toggle">
-                <label class="toggle-container">
-                    <input type="checkbox" id="datingMode" checked>
-                    <span class="toggle-slider"></span>
-                    <span class="toggle-label">💕 Dating Mode</span>
-                </label>
-            </div>
-
             <div class="card-container">
                 <div class="current-prompt" id="currentPrompt">
                     <!-- Current prompt will be displayed here -->
@@ -43,7 +35,7 @@
                         <div class="welcome-content">
                             <p>Upload a photo to get started</p>
                             <button class="upload-btn-welcome" onclick="document.getElementById('imageInput').click()">
-                                📷 Upload Photo
+                                [ upload ]
                             </button>
                         </div>
                     </div>
@@ -56,22 +48,29 @@
 
             <div class="main-action-buttons">
                 <button class="main-btn reject-btn" id="rejectBtn">
-                    <span>❌</span>
+                    <span>×</span>
                     <div class="btn-label">Skip</div>
                 </button>
                 <button class="main-btn like-btn" id="likeBtn">
-                    <span>❤️</span>
+                    <span>♥</span>
                     <div class="btn-label">Love</div>
                 </button>
             </div>
             
             <div class="secondary-buttons">
                 <button class="secondary-btn save-btn" id="saveBtn">
-                    <span>💾</span>
+                    <span>↓</span>
                 </button>
                 <button class="secondary-btn upload-btn-action" id="uploadBtn">
-                    <span>📷</span>
+                    <span>+</span>
                 </button>
+                <div class="mode-toggle">
+                    <label class="toggle-container">
+                        <input type="checkbox" id="datingMode" checked>
+                        <span class="toggle-slider"></span>
+                        <span class="toggle-label">dating mode</span>
+                    </label>
+                </div>
             </div>
         </div>
 
