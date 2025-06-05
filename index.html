@@ -25,8 +25,19 @@
         </div>
 
         <div class="main-content">
+            <div class="mode-toggle">
+                <label class="toggle-container">
+                    <input type="checkbox" id="datingMode" checked>
+                    <span class="toggle-slider"></span>
+                    <span class="toggle-label">💕 Dating Mode</span>
+                </label>
+            </div>
 
             <div class="card-container">
+                <div class="current-prompt" id="currentPrompt">
+                    <!-- Current prompt will be displayed here -->
+                </div>
+                
                 <div class="card-stack" id="cardStack">
                     <div class="welcome-card" id="welcomeCard">
                         <div class="welcome-content">
@@ -41,24 +52,25 @@
                         <p id="loadingText">Creating magic...</p>
                     </div>
                 </div>
-                
-                <div class="current-prompt" id="currentPrompt">
-                    <!-- Current prompt will be displayed here -->
-                </div>
             </div>
 
-            <div class="action-buttons">
-                <button class="action-btn reject-btn" id="rejectBtn">
+            <div class="main-action-buttons">
+                <button class="main-btn reject-btn" id="rejectBtn">
                     <span>❌</span>
+                    <div class="btn-label">Skip</div>
                 </button>
-                <button class="action-btn save-btn" id="saveBtn">
+                <button class="main-btn like-btn" id="likeBtn">
+                    <span>❤️</span>
+                    <div class="btn-label">Love</div>
+                </button>
+            </div>
+            
+            <div class="secondary-buttons">
+                <button class="secondary-btn save-btn" id="saveBtn">
                     <span>💾</span>
                 </button>
-                <button class="action-btn upload-btn-action" id="uploadBtn">
+                <button class="secondary-btn upload-btn-action" id="uploadBtn">
                     <span>📷</span>
-                </button>
-                <button class="action-btn like-btn" id="likeBtn">
-                    <span>❤️</span>
                 </button>
             </div>
         </div>

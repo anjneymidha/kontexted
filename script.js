@@ -15,11 +15,7 @@ const lovedList = document.getElementById('lovedList');
 const lovedSection = document.getElementById('lovedSection');
 
 let currentCard = null;
-let isDragging = false;
-let startX = 0;
-let startY = 0;
-let currentX = 0;
-let currentY = 0;
+let isDatingMode = true;
 let matches = 0;
 let cardQueue = [];
 let isGenerating = false;
@@ -43,6 +39,19 @@ imageInput.addEventListener('change', handleImageUpload);
 rejectBtn.addEventListener('click', () => swipeCard('left'));
 likeBtn.addEventListener('click', () => swipeCard('right'));
 saveBtn.addEventListener('click', saveCurrentImage);
+
+// Dating mode toggle
+const datingModeToggle = document.getElementById('datingMode');
+datingModeToggle.addEventListener('change', (e) => {
+    isDatingMode = e.target.checked;
+    console.log('Dating mode:', isDatingMode ? 'ON 💕' : 'OFF');
+    
+    // Update button labels based on mode
+    updateButtonLabels();
+    
+    // Save preference
+    localStorage.setItem('kontext-dating-mode', isDatingMode);
+});
 
 // Wait for user upload instead of auto-processing
 window.addEventListener('load', () => {
@@ -139,92 +148,9 @@ function createComparisonCard(_, editedUrl, prompt) {
 }
 
 function addSwipeListeners(card) {
-    let startX, startY, currentX, currentY, startTime;
-    
-    card.addEventListener('mousedown', startDrag);
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', endDrag);
-    
-    card.addEventListener('touchstart', startDrag, { passive: false });
-    document.addEventListener('touchmove', drag, { passive: false });
-    document.addEventListener('touchend', endDrag, { passive: true });
-    
-    function startDrag(e) {
-        if (isDragging) return;
-        isDragging = true;
-        
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        startX = clientX;
-        startY = clientY;
-        currentX = clientX;
-        currentY = clientY;
-        startTime = Date.now();
-        
-        card.classList.add('dragging');
-        card.style.transition = 'none';
-        e.preventDefault();
-    }
-    
-    function drag(e) {
-        if (!isDragging) return;
-        e.preventDefault();
-        
-        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        currentX = clientX;
-        currentY = clientY;
-        
-        const deltaX = currentX - startX;
-        const deltaY = currentY - startY;
-        const rotation = deltaX * 0.1;
-        
-        // Direct transform for immediate response
-        card.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) rotate(${rotation}deg)`;
-        
-        // Show indicators
-        if (Math.abs(deltaX) > 50) {
-            if (deltaX > 0) {
-                card.classList.add('indicating-like');
-                card.classList.remove('indicating-nope');
-            } else {
-                card.classList.add('indicating-nope');
-                card.classList.remove('indicating-like');
-            }
-        } else {
-            card.classList.remove('indicating-like', 'indicating-nope');
-        }
-    }
-    
-    function endDrag() {
-        if (!isDragging) return;
-        isDragging = false;
-        
-        const deltaX = currentX - startX;
-        const deltaTime = Date.now() - startTime;
-        const velocity = Math.abs(deltaX) / Math.max(deltaTime, 1);
-        
-        card.classList.remove('dragging', 'indicating-like', 'indicating-nope');
-        
-        // Simple, reliable swipe detection
-        const shouldSwipe = Math.abs(deltaX) > 70 || velocity > 0.3;
-        
-        if (shouldSwipe) {
-            const direction = deltaX > 0 ? 'right' : 'left';
-            // Immediate swipe - no delays
-            card.classList.add(`swiped-${direction}`);
-            completeSwipe(card, direction);
-        } else {
-            // Quick snap back
-            card.style.transition = 'transform 0.2s ease-out';
-            card.style.transform = 'translate3d(0, 0, 0) rotate(0deg)';
-            setTimeout(() => {
-                card.style.transition = '';
-            }, 200);
-        }
-    }
+    // Remove all gesture swiping - use buttons only
+    // Card is now static and only responds to button clicks
+    card.style.cursor = 'default';
 }
 
 function swipeCard(direction) {
@@ -542,7 +468,9 @@ async function analyzeImageWithGemini(base64Image) {
                         content: [
                             {
                                 type: 'text',
-                                text: 'Generate a unique, creative transformation for this image. Avoid superhero themes. Be original and diverse. Format your response exactly like this: $transformation description here$. Examples: $The person is now a Victorian-era inventor$ or $Transform into a watercolor painting$ or $The person is now in ancient Egypt$ or $Become a character from a Studio Ghibli film$ or $The person is now a medieval alchemist$.'
+                                text: isDatingMode ? 
+                                    'Generate a romantic image with this person and an AI-generated partner. Create diverse, attractive partners of various ethnicities and styles. Format your response exactly like this: $description here$. Examples: $The person with their charming date at a cozy coffee shop$ or $The person and their partner having a romantic picnic$ or $The person dancing with their elegant partner at a formal event$ or $The person and their adventurous partner on a scenic hike$ or $The person sharing a sunset moment with their artistic partner$.': 
+                                    'Generate a unique, creative transformation for this image. Avoid superhero themes. Be original and diverse. Format your response exactly like this: $transformation description here$. Examples: $The person is now a Victorian-era inventor$ or $Transform into a watercolor painting$ or $The person is now in ancient Egypt$ or $Become a character from a Studio Ghibli film$ or $The person is now a medieval alchemist$.'
                             },
                             {
                                 type: 'image_url',
@@ -688,6 +616,18 @@ function loadPreferences() {
                 saved: preferences.saved.length
             });
         }
+        
+        // Load dating mode preference
+        const datingModeStored = localStorage.getItem('kontext-dating-mode');
+        if (datingModeStored !== null) {
+            isDatingMode = datingModeStored === 'true';
+            const datingModeToggle = document.getElementById('datingMode');
+            if (datingModeToggle) {
+                datingModeToggle.checked = isDatingMode;
+                updateButtonLabels();
+                console.log('💕 Dating mode preference restored:', isDatingMode);
+            }
+        }
     } catch (error) {
         console.error('❌ Error loading preferences:', error);
         // Reset to default if corrupted
@@ -813,4 +753,17 @@ function compressImage(file, maxWidth = 1920, maxHeight = 1920, quality = 0.85) 
         img.onerror = () => reject(new Error('Failed to load image'));
         img.src = URL.createObjectURL(file);
     });
+}
+
+function updateButtonLabels() {
+    const rejectLabel = document.querySelector('.reject-btn .btn-label');
+    const likeLabel = document.querySelector('.like-btn .btn-label');
+    
+    if (isDatingMode) {
+        if (rejectLabel) rejectLabel.textContent = 'Pass';
+        if (likeLabel) likeLabel.textContent = 'Match';
+    } else {
+        if (rejectLabel) rejectLabel.textContent = 'Skip';
+        if (likeLabel) likeLabel.textContent = 'Love';
+    }
 }
