@@ -72,8 +72,8 @@ async function handleImageUpload(event) {
         hideWelcomeMessage();
         showLoading('Processing your photo...');
         
-        // Only compress if file is too large for server - ultra aggressive for mobile
-        const maxServerSize = 5 * 1024 * 1024; // 5MB (ultra conservative for mobile)
+        // Only compress if file is too large for server - extreme compression for base64
+        const maxServerSize = 2 * 1024 * 1024; // 2MB (accounting for base64 expansion ~33%)
         let processedBlob = file;
         
         if (file.size > maxServerSize) {
@@ -83,12 +83,12 @@ async function handleImageUpload(event) {
             // If still too large, compress more aggressively
             if (processedBlob.size > maxServerSize) {
                 showLoading('Further optimizing...');
-                processedBlob = await compressImage(file, 640, 640, 0.4);
+                processedBlob = await compressImage(file, 512, 512, 0.3);
                 
                 // Final attempt if still too large
                 if (processedBlob.size > maxServerSize) {
                     showLoading('Final optimization...');
-                    processedBlob = await compressImage(file, 512, 512, 0.3);
+                    processedBlob = await compressImage(file, 400, 400, 0.2);
                 }
             }
             
@@ -732,7 +732,7 @@ function updateLovedUI() {
     });
 }
 
-function compressImage(file, maxWidth = 1024, maxHeight = 1024, quality = 0.6) {
+function compressImage(file, maxWidth = 800, maxHeight = 800, quality = 0.5) {
     return new Promise((resolve, reject) => {
         // Check file size first
         const maxSize = 200 * 1024 * 1024; // 200MB absolute limit
